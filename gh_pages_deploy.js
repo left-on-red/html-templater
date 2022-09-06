@@ -3,7 +3,7 @@ import { execa } from 'execa';
 import fs from 'fs';
 (async function() {
     try {
-        await execa('git', ['checkout', '--orphan', 'gh-pages']);
+        await execa('git', ['checkout', 'gh-pages']);
         // eslint-disable-next-line no-console
         console.log('building started...');
         await execa('npm', ['run', 'build']);
