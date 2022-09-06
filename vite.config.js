@@ -16,7 +16,8 @@ export default defineConfig({
     },
     define: {
         global: 'globalThis',
-        'process.env': '{}'
+        'process.env': '{}',
+        emitter: 'function() {}'
     },
 
     build: {
