@@ -47,7 +47,7 @@ export default {
             <button type="button" class="btn btn-outline-secondary" @click="upload()">Upload</button>
             <input type="text" class="form-control" placeholder="<no file specified>" readonly :value="options.file ? options.file.name : ''">
         </div>
-        <AttachmentsArchive v-if="this.options.file && this.options.file.name.endsWith('.zip')" :options="options" />
+        <AttachmentsArchive v-if="options.file && options.file.name.endsWith('.zip')" :options="options" />
     </widget>
 </template>
 
