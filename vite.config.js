@@ -17,7 +17,8 @@ export default defineConfig({
     },
     define: {
         global: 'globalThis',
-        'process.env': '{}'
+        process: 'require("process")',
+        'process.env': '{}',
     },
 
     build: {
