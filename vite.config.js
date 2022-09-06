@@ -11,13 +11,13 @@ export default defineConfig({
         alias: {
             '@': fileURLToPath(new URL('./src', import.meta.url)),
             'crypto': `crypto-browserify`,
-            'buffer': '@red0531/buffer'
+            'buffer': '@red0531/buffer',
+            'emitter': 'empty-functions'
         }
     },
     define: {
         global: 'globalThis',
-        'process.env': '{}',
-        emitter: 'function() {}'
+        'process.env': '{}'
     },
 
     build: {
