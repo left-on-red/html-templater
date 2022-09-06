@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="stylesheet" href="/src/assets/bootstrap.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HTML Templater Tool</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script>
+        // cleanest and probably safest alternative to eval()
+        // I didn't feel like writing an entire js parser
+        let elevated_exec = (obj, str, inline) => Function(...Object.keys(obj), `${inline ? !str.startsWith('return ') ? 'return ' : '' : ''}${str}`)(...Object.values(obj));
+
+        let madlib = (ctx, str) => {
+            let matches = str.match(/(?<=\{)(.*?)(?=\})/g);
+            if (matches == null) { matches = [] }
+            for (let m = 0; m < matches.length; m++) {
+                try { str = str.replaceAll(`{${matches[m]}}`, elevated_exec(ctx, matches[m], true)); }
+                catch(e) { console.log(e); str = str.replace(`{${matches[m]}}`, '') }
+            }
+            return str;
+        }
+
+        let trigger_download = (buffer, filename) => {
+            let blob = new Blob([buffer]);
+            let anchor = document.createElement('a');
+            anchor.href = window.URL.createObjectURL(blob);
+            anchor.download = filename;
+            anchor.click();
+        }
+    </script>
+    <script src="src/assets/xlsx.full.min.js"></script>
+    <script src="src/assets/lib/tinymce.min.js"></script>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
