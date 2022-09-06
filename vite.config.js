@@ -12,7 +12,7 @@ export default defineConfig({
             '@': fileURLToPath(new URL('./src', import.meta.url)),
             'crypto': `crypto-browserify`,
             'buffer': '@red0531/buffer',
-            'emitter': 'empty-functions'
+            'emitter': 'events'
         }
     },
     define: {
