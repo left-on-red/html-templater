@@ -1,12 +1,3 @@
-<script setup>
-</script>
-
-<script>
-
-    export default {
-    }
-</script>
-
 <template>
     <div class="row">
         <div class="col d-lg-none"></div>
