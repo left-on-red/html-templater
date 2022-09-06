@@ -3,13 +3,13 @@ import { execa } from 'execa';
 import fs from 'fs';
 (async function() {
     try {
-        await execa('git', ['checkout', '--orphan', 'gh-pages']);
+        await execa('git', ['checkout', 'gh-pages']);
         // eslint-disable-next-line no-console
         console.log('building started...');
         await execa('npm', ['run', 'build']);
         // Understand if it's dist or build folder
         let name = fs.existsSync('dist') ? 'dist' : 'build';
-        //fs.cpSync('src/assets', `${name}/assets`);
+        fs.cpSync('src/assets', `${name}/assets`);
         await execa('git', ['--work-tree', name, 'add', '--all']);
         await execa('git', ['--work-tree', name, 'commit', '-m', 'gh-pages']);
         console.log('pushing to gh-pages...');
