@@ -9,6 +9,7 @@ import fs from 'fs';
         await execa('npm', ['run', 'build']);
         // Understand if it's dist or build folder
         let name = fs.existsSync('dist') ? 'dist' : 'build';
+        fs.cpSync('src/assets', `${name}/assets`);
         await execa('git', ['--work-tree', name, 'add', '--all']);
         await execa('git', ['--work-tree', name, 'commit', '-m', 'gh-pages']);
         console.log('pushing to gh-pages...');
