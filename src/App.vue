@@ -6,6 +6,7 @@
     import GenerateEmailsWidget from './components/widgets/GenerateEmailsWidget.vue';
     import GenerateHtmlWidget from './components/widgets/GenerateHtmlWidget.vue';
     import Docs from './Docs.vue';
+    import config from './../package.json';
 </script>
 
 <script>
@@ -181,7 +182,8 @@
                 {{main_options.email_mode ? 'EMAIL' : 'HTML'}}
             </span>
             TEMPLATER
-            <div class="form-check form-switch d-inline-block">
+            <span class="version">v{{config.version}}</span>
+            <div class="form-check form-switch d-inline-block" style="vertical-align: top;">
                 <input type="checkbox" class="form-check-input" v-model="main_options.email_mode" :disabled="docs">
             </div>
             <div class="d-inline-block float-end" style="margin-left: 5px;">
@@ -229,5 +231,17 @@
         width: 150px;
         transition: all 0.2s;
         text-align: center;
+    }
+
+    span.version {
+        font-size: 24px;
+        vertical-align: top;
+        width: initial;
+        padding: 0 10px;
+        letter-spacing: 3px;
+        background-color: #404040;
+        margin: 10px 15px 10px -10px;
+        color: #F1F1F1;
+        border-radius: 50px;
     }
 </style>
