@@ -1,9 +1,11 @@
 <script>
 import JSZip from 'jszip';
+import { Config } from './../../Configs.js';
 
 export default {
     props: {
-        options: Object
+        options: Config,
+        spreadsheets: Array
     },
 
     data: () => {
@@ -15,11 +17,11 @@ export default {
 
     methods: {
         get_context(index) {
-            let headered = this.options.main_options.headered;
-            let spreadsheets = this.options.spreadsheets;
-            let i_spreadsheet = this.options.main_options.i_spreadsheet;
-            let i_tab = this.options.main_options.i_tab;
-            let k_column = this.options.main_options.k_column;
+            let headered = this.options.main.headered;
+            let spreadsheets = this.spreadsheets;
+            let i_spreadsheet = this.options.main.i_spreadsheet;
+            let i_tab = this.options.main.i_tab;
+            let k_column = this.options.main.k_column;
             let row = spreadsheets[i_spreadsheet].sheets[i_tab].aoa[index];
 
             let ctx = {
@@ -30,10 +32,10 @@ export default {
                 spreadsheets: spreadsheets.map(s => s.sheets.map(t => t.aoa))
             }
 
-            if (this.options.main_options.advanced) {
+            if (this.options.main.advanced) {
                 ctx.mapped = {};
 
-                let v_maps = this.options.main_options.value_maps;
+                let v_maps = this.options.main.value_maps;
                 for (let v = 0; v < v_maps.length; v++) {
                     let m_spreadsheet = v_maps[v][0];
                     let m_tab = v_maps[v][1];
@@ -62,7 +64,7 @@ export default {
                 // static context; ref for custom vars
                 let s_ctx = JSON.parse(JSON.stringify(ctx));
 
-                let arr = this.options.main_options.custom_variables;
+                let arr = this.options.main.custom_variables;
                 ctx.vars = {};
 
                 for (let a = 0; a < arr.length; a++) {
@@ -89,13 +91,13 @@ export default {
             this.progress_percent = 0;
             this.progress_label = '';
 
-            let type = this.options.html_generate_options.output_type;
+            let type = this.options.html_generate.output_type;
 
-            let headered = this.options.main_options.headered;
-            let spreadsheets = this.options.spreadsheets;
-            let i_spreadsheet = this.options.main_options.i_spreadsheet;
-            let i_tab = this.options.main_options.i_tab;
-            let k_column = this.options.main_options.k_column;
+            let headered = this.options.main.headered;
+            let spreadsheets = this.spreadsheets;
+            let i_spreadsheet = this.options.main.i_spreadsheet;
+            let i_tab = this.options.main.i_tab;
+            let k_column = this.options.main.k_column;
             let aoa = spreadsheets[i_spreadsheet].sheets[i_tab].aoa;
             
             // spreadsheet
@@ -127,7 +129,7 @@ export default {
                     let zip = new JSZip();
                     
                     for (let i = headered[i_spreadsheet][i_tab] ? 1 : 0; i < aoa.length; i++) {
-                        let filename = `${madlib(this.get_context(i), this.options.html_generate_options.filename_template).replace(/[/\\?%*:|"<>]/g, '_')}.${extension}`;
+                        let filename = `${madlib(this.get_context(i), this.options.html_generate.filename_template).replace(/[/\\?%*:|"<>]/g, '_')}.${extension}`;
                         
                         this.progress_percent = (i / aoa.length) * 100;
                         this.progress_label = `${filename}...`;
@@ -162,10 +164,10 @@ export default {
 
     computed: {
         keys() {
-            if (this.options.spreadsheets.length == 0) { return [] }
-            let { i_spreadsheet, i_tab, k_column } = this.options.main_options;
+            if (this.spreadsheets.length == 0) { return [] }
+            let { i_spreadsheet, i_tab, k_column } = this.options.main;
 
-            let aoa = this.options.spreadsheets[i_spreadsheet].sheets[i_tab].aoa;
+            let aoa = this.spreadsheets[i_spreadsheet].sheets[i_tab].aoa;
             let arr = [];
             for(let i = 0; i < aoa.length; i++) { arr.push([i, aoa[i][k_column]]) }
 
@@ -193,7 +195,7 @@ export default {
                 <tr>
                     <td>
                         <div class="input-group">
-                            <select class="form-control" :disabled="options.spreadsheets.length == 0" v-model="options.html_generate_options.output_type">
+                            <select class="form-control" :disabled="spreadsheets.length == 0" v-model="options.html_generate.output_type">
                                 <option :value="0">Many Files (.html)</option>
                                 <option :value="1">Many Files (.html.txt)</option>
                                 <option :value="2">One File (.html)</option>
@@ -204,12 +206,12 @@ export default {
                     </td>
                     <td>
                         <div class="input-group">
-                            <input type="text" class="form-control" placeholder="<filename template>" :disabled="[2, 3, 4].includes(options.html_generate_options.output_type)" v-model="options.html_generate_options.filename_template">
-                            <div class="input-group-append"><span class="input-group-text">{{ options.html_generate_options.output_type == 1 ? '.html.txt' : '.html' }}</span></div>
+                            <input type="text" class="form-control" placeholder="<filename template>" :disabled="[2, 3, 4].includes(options.html_generate.output_type)" v-model="options.html_generate.filename_template">
+                            <div class="input-group-append"><span class="input-group-text">{{ options.html_generate.output_type == 1 ? '.html.txt' : '.html' }}</span></div>
                         </div>
                     </td>
                     <td>
-                        <button type="button" class="btn btn-secondary" @click="start_generate()" :disabled="options.spreadsheets.length == 0 || ([0, 1].includes(options.html_generate_options.output_type) && options.html_generate_options.filename_template == '')">Generate</button>
+                        <button type="button" class="btn btn-secondary" @click="start_generate()" :disabled="spreadsheets.length == 0 || ([0, 1].includes(options.html_generate.output_type) && options.html_generate.filename_template == '')">Generate</button>
                     </td>
                 </tr>
             </tbody>

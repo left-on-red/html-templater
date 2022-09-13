@@ -1,9 +1,11 @@
 <script>
 import JSZip from 'jszip';
+import { AttachmentsConfig } from './../../Configs.js';
+
 export default {
     props: {
         spreadsheets: Array,
-        options: Object
+        options: AttachmentsConfig
     },
    
     methods: {
@@ -15,18 +17,14 @@ export default {
                 let file = event.target.files[0];
                 if (file.name.endsWith('.zip')) {
                     JSZip.loadAsync(await file.arrayBuffer()).then((data) => {
-                        this.options.file = {
-                            name: file.name,
-                            data
-                        }
+                        this.options.archive = data;
+                        this.options.archive_name = file.name;
                     });
                 }
                 
                 else {
-                    this.options.file = {
-                        name: file.name,
-                        data: await file.arrayBuffer()
-                    }
+                    this.options.archive = await file.arrayBuffer();
+                    this.options.archive_name = file.name;
                 }
             });
 
@@ -45,9 +43,9 @@ export default {
     <widget title="Attachments">
         <div class="input-group">
             <button type="button" class="btn btn-outline-secondary" @click="upload()">Upload</button>
-            <input type="text" class="form-control" placeholder="<no file specified>" readonly :value="options.file ? options.file.name : ''">
+            <input type="text" class="form-control" placeholder="<no file specified>" readonly :value="options.archive ? options.archive_name : ''">
         </div>
-        <AttachmentsArchive v-if="options.file && options.file.name.endsWith('.zip')" :options="options" />
+        <AttachmentsArchive v-if="options.archive && options.archive_name.endsWith('.zip')" :options="options" />
     </widget>
 </template>
 

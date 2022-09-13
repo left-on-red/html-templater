@@ -12,49 +12,31 @@
 <script>
     import JSZip from 'jszip';
 
+    import { Config } from './Configs.js';
+
     export default {
         data: () => {
             return {
                 template_extension: 'template',
                 docs: false,
                 spreadsheets: [],
-                main_options: {
-                    email_mode: false,
-                    headered: [],
-                    i_spreadsheet: 0,
-                    i_tab: 0,
-                    k_column: 0,
-                    value_maps: [],
-                    custom_variables: [],
-                    advanced: false
-                },
+                // this property CANNOT be named "config"
+                // seems to be a reserved Vue prop
+                options: new Config()
+            }
+        },
 
-                recipient_options: {
-                    enable_to: false,
-                    to_col: 0,
-                    to_delim: '',
-                    enable_cc: false,
-                    cc_col: 0,
-                    cc_delim: ''
-                },
+        computed: {
+            main_aoa() {
+                //spreadsheets[config.main.i_spreadsheet] ? spreadsheets[config.main.i_spreadsheet].sheets[config.main.i_tab].aoa : []
+                let { i_spreadsheet, i_tab } = this.options.main;
+                return this.spreadsheets[i_spreadsheet] ? this.spreadsheets[i_spreadsheet].sheets[i_tab].aoa : [];
+            },
 
-                attachments_options: {
-                    file: null,
-                    conditional: false,
-                    flag: false,
-                    filename_template: '',
-                    filename_expression: ''
-                },
-
-                email_generate_options: {
-                    filename_template: '',
-                    subject_template: ''
-                },
-
-                html_generate_options: {
-                    output_type: 0,
-                    filename_template: ''
-                }
+            main_headered() {
+                //main_options.headered[main_options.i_spreadsheet] ? main_options.headered[main_options.i_spreadsheet][main_options.i_tab] : false
+                let { i_spreadsheet, i_tab, headered } = this.options.main;
+                return headered[i_spreadsheet] ? headered[i_spreadsheet][i_tab] : false;
             }
         },
 
@@ -62,21 +44,20 @@
             async export_config() {
                 let zip = new JSZip();
 
-                // kind of annoyed that I can't destructure back into an object
-                let { main_options, recipient_options, email_generate_options, html_generate_options } = this;
+                let configs = Object.keys(this.options);
+                for (let c = 0; c < configs.length; c++) {
+                    let obj = this.options[configs[c]];
+                    // don't think I can serialize the file data w/ json. not that it would be a good idea anyway. still annoying tho
+                    if (configs[c] == 'attachments') {
+                        let clone = Object.assign({}, obj);
+                        if (clone.archive) { zip.file(clone.archive_name, await clone.archive.generateAsync({ type: 'uint8array' })) }
 
-                let attachments_options = {
-                    conditional: this.attachments_options.conditional,
-                    flag: this.attachments_options.flag,
-                    filename_template: this.attachments_options.filename_template,
-                    filename_expression: this.attachments_options.filename_expression,
-                    archive_filename: this.attachments_options.file ? this.attachments_options.file.name : null
+                        delete clone.archive;
+                        obj = clone;
+                    }
+
+                    zip.file(`${configs[c]}.json`, JSON.stringify(obj, null, 4))
                 }
-
-                let obj = { main_options, recipient_options, email_generate_options, html_generate_options, attachments_options };
-                for (let o in obj) { zip.file(`${o}.json`, JSON.stringify(obj[o], null, 4)) }
-        
-                if (this.attachments_options.file) { zip.file(this.attachments_options.file.name, await this.attachments_options.file.data.generateAsync({ type: 'uint8array' })) }
 
                 let sheet_index = [];
                 for (let s = 0; s < this.spreadsheets.length; s++) {
@@ -119,31 +100,25 @@
                         }
                     }
 
-                    let json_files = [ 'main_options', 'recipient_options', 'attachments_options', 'email_generate_options', 'html_generate_options' ];
-                    for (let j = 0; j < json_files.length; j++) {
+                    let configs = Object.keys(this.options);
+                    for (let c = 0; c < configs.length; c++) {
                         try {
-                            let obj = JSON.parse(await zip.file(`${json_files[j]}.json`).async('string'));
-                            if (json_files[j] == 'attachments_options') {
-                                let filename = obj.archive_filename;
-                                delete obj.archive_filename;
-                                obj.file = {
-                                    name: filename,
-                                    data: await JSZip.loadAsync(await zip.file(filename).async('uint8array'))
-                                }
-
-                                this.attachments_options.file = {
-                                    name: '',
-                                    data: null
-                                }
-                            }
-
-                            recur(this[json_files[j]], obj);
+                            let obj = JSON.parse(await zip.file(`${configs[c]}.json`).async('string'));
+                            recur(this.options[configs[c]], obj);
                         }
-                        
-                        catch(e) {}
-                    }
 
-                    //tinymce.activeEditor.getContent()
+                        catch {}
+
+                        if (this.options.attachments.archive_name) {
+                            let archive_name = this.options.attachments.archive_name;
+                            try { this.options.attachments.archive = await JSZip.loadAsync(await zip.file(archive_name).async('uint8array')) }
+                            catch {
+                                this.options.attachments.archive = null;
+                                this.options.attachments.archive_name = '';
+                            }
+                        }
+                    }
+                    
                     tinymce.activeEditor.setContent(await zip.file('template.html').async('string'));
 
                     while (this.spreadsheets.length > 0) { this.spreadsheets.pop() }
@@ -178,13 +153,13 @@
 <template>
     <div class="container" style="margin-bottom: 100px; margin-top: 60px;">
         <h1 style="padding: 0; margin: 20px 0 0 0;">
-            <span :class="main_options.email_mode ? 'text-danger' : 'text-primary'">
-                {{main_options.email_mode ? 'EMAIL' : 'HTML'}}
+            <span :class="options.main.email ? 'text-danger' : 'text-primary'">
+                {{options.main.email ? 'EMAIL' : 'HTML'}}
             </span>
             TEMPLATER
             <span class="version">v{{config.version}}</span>
             <div class="form-check form-switch d-inline-block" style="vertical-align: top;">
-                <input type="checkbox" class="form-check-input" v-model="main_options.email_mode" :disabled="docs">
+                <input type="checkbox" class="form-check-input" v-model="options.main.email" :disabled="docs">
             </div>
             <div class="d-inline-block float-end" style="margin-left: 5px;">
                 <button type="button" class="btn btn-outline-secondary" @click="docs = !docs" :style="docs ? 'background-color: #6c757d !important; color: #fff !important;' : ''">Docs</button>
@@ -198,12 +173,12 @@
         </h1>
         <Docs v-if="docs" style="margin-top: 20px;" />
         <template v-else>
-            <SpreadsheetWidget :spreadsheets="spreadsheets" :options="main_options" />
+            <SpreadsheetWidget :spreadsheets="spreadsheets" :options="options.main" />
             <TemplateWidget />
-            <AttachmentsWidget v-if="main_options.email_mode" :options="attachments_options" />
-            <RecipientsWidget v-if="main_options.email_mode" :options="recipient_options" :aoa="spreadsheets[main_options.i_spreadsheet] ? spreadsheets[main_options.i_spreadsheet].sheets[main_options.i_tab].aoa : []" :headered="main_options.headered[main_options.i_spreadsheet] ? main_options.headered[main_options.i_spreadsheet][main_options.i_tab] : false" />
-            <GenerateEmailsWidget v-if="main_options.email_mode" :options="{ spreadsheets, main_options, recipient_options, attachments_options, html_generate_options, email_generate_options }" />
-            <GenerateHtmlWidget v-else :options="{ spreadsheets, main_options, recipient_options, attachments_options, html_generate_options, email_generate_options }" />
+            <AttachmentsWidget v-if="options.main.email" :options="options.attachments" />
+            <RecipientsWidget v-if="options.main.email" :options="options.recipients" :aoa="main_aoa" :headered="main_headered" />
+            <GenerateEmailsWidget v-if="options.main.email" :options="options" :spreadsheets="spreadsheets" />
+            <GenerateHtmlWidget v-else :options="options" :spreadsheets="spreadsheets" />
         </template>
     </div>
 </template>

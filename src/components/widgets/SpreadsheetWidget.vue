@@ -1,8 +1,9 @@
 <script>
+    import { MainConfig } from './../../Configs.js';
 export default {
     props: {
         spreadsheets: Array,
-        options: Object
+        options: MainConfig
     },
 
     watch: {

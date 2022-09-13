@@ -1,16 +1,8 @@
 <script>
 export default {
     props: {
-        //spreadsheets: Array
     },
     data() {
-        return {
-            headered: [],
-            i_spreadsheet: 0,
-            i_tab: 0,
-            k_column: 0,
-            value_maps: []
-        }
     },
    
     methods: {
