@@ -2,6 +2,10 @@
   font-family: Calibri, sans-serif;
 }
 
+html {
+    overflow: scroll;
+}
+
 h1, h2, h3, h4, h5, h6 {
     color: #202020;
     font-weight: bold;

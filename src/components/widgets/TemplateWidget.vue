@@ -1,19 +1,6 @@
 <script>
 export default {
-    props: {
-    },
-    data() {
-    },
-   
-    methods: {
-    },
-
-    watch: {
-        //spreadsheets: {
-        //    deep: true,
-        //    handler(arr) { this.headered.push(arr[arr.length - 1].sheets.map(v => false)) }
-        //}
-    },
+    props: {},
 
     mounted() {
         tinymce.init({

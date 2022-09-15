@@ -152,27 +152,21 @@
 
 <template>
     <div class="container" style="margin-bottom: 100px; margin-top: 60px;">
-        <h1 style="padding: 0; margin: 20px 0 0 0;">
-            <span :class="options.main.email ? 'text-danger' : 'text-primary'">
-                {{options.main.email ? 'EMAIL' : 'HTML'}}
-            </span>
-            TEMPLATER
-            <span class="version">v{{config.version}}</span>
-            <div class="form-check form-switch d-inline-block" style="vertical-align: top;">
-                <input type="checkbox" class="form-check-input" v-model="options.main.email" :disabled="docs">
+        <div class="heading">
+            <h1>TEMPLATER</h1>
+            <span>v{{config.version}}</span>
+            <div class="reactives">
+                <div :class="`mode-btn${options.main.email ? ' active' : ''}`" @click="options.main.email = !options.main.email">{{options.main.email ? 'EMAIL' : 'HTML'}}</div>
+                <div :class="`docs-btn${docs ? ' active' : ''}`" @click="docs = !docs">DOCS</div>
             </div>
-            <div class="d-inline-block float-end" style="margin-left: 5px;">
-                <button type="button" class="btn btn-outline-secondary" @click="docs = !docs" :style="docs ? 'background-color: #6c757d !important; color: #fff !important;' : ''">Docs</button>
-            </div>
-            <div class="d-inline-block float-end">
-                <button type="button" class="btn btn-outline-secondary" @click="export_config()" :disabled="docs">Export Config</button>
-            </div>
-            <div class="d-inline-block float-end" style="margin-right: 5px;">
-                <button type="button" class="btn btn-outline-secondary" @click="import_config()" :disabled="docs">Import Config</button>
-            </div>
-        </h1>
+        </div>
+        <hr />
         <Docs v-if="docs" style="margin-top: 20px;" />
         <template v-else>
+            <div class="import-export">
+                <div @click="import_config()">IMPORT CONFIG</div>
+                <div @click="export_config()">EXPORT CONFIG</div>
+            </div>
             <SpreadsheetWidget :spreadsheets="spreadsheets" :options="options.main" />
             <TemplateWidget />
             <AttachmentsWidget v-if="options.main.email" :options="options.attachments" />
@@ -184,39 +178,91 @@
 </template>
 
 <style scoped>
-    input[type="checkbox"]:focus {
-        box-shadow: none !important;
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e") !important;
+    .heading {
+        margin: 0;
+        padding: 0;
+        display: block;
+        display: flex;
     }
-
-    input[type="checkbox"]:checked {
-        background-color: #dc3545 !important;
-        border-color: #dc3545 !important;
-    }
-
-    input[type="checkbox"] {
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e") !important;
-        background-color: #007bff !important;
-        border-color: #007bff !important;
-        transition: all 0.2s;
-    }
-
-    span {
+    .heading h1 {
         display: inline-block;
-        width: 150px;
-        transition: all 0.2s;
-        text-align: center;
+        font-size: 24px;
+        font-weight: bold;
+        letter-spacing: 4px;
+        font-family: monospace;
+        padding: 0;
+        margin: 0 !important;
+        line-height: 10px;
+        padding: 10px 0;
+    }
+    .heading span {
+        display: inline-block;
+        background-color: #303030;
+        color: #F1F1F1;
+        font-size: 12px;
+        font-family: monospace;
+        font-weight: bold;
+        border-radius: 25px;
+        line-height: 10px;
+        margin: 6px 0;
+        padding: 4px 7px;
+    }
+    .reactives {
+        margin-left: auto;
     }
 
-    span.version {
-        font-size: 24px;
-        vertical-align: top;
-        width: initial;
-        padding: 0 10px;
-        letter-spacing: 3px;
-        background-color: #404040;
-        margin: 10px 15px 10px -10px;
-        color: #F1F1F1;
-        border-radius: 50px;
+    .reactives div {
+        font-size: 20px;
+        letter-spacing: 2px;
+        font-weight: bold;
+        font-family: monospace !important;
+        transition: all 0.2s !important;
+        width: 100px;
+        height: 100%;
+        text-align: center;
+        cursor: pointer;
+        display: inline-block;
+    }
+
+    .reactives .mode-btn {
+        background-color: #007bff;
+        border: solid 1px #007bff;
+        color: #FFF;
+    }
+
+    .reactives .mode-btn.active {
+        background-color: #dc3545;
+        border-color: #dc3545;
+    }
+
+    .reactives .docs-btn {
+        font-weight: normal;
+        color: #6c757d;
+        border: solid 1px #6c757d;
+    }
+
+    .reactives .docs-btn.active {
+        background-color: #6c757d;
+        color: #FFF;
+    }
+
+    .import-export div {
+        font-size: 14px;
+        font-family: monospace !important;
+        letter-spacing: 1px;
+        transition: all 0.2s;
+        height: 100%;
+        width: 150px;
+        text-align: center;
+        cursor: pointer;
+        display: inline-block;
+        margin: 0 5px 0 0;
+        padding: 5px 0;
+        background-color: #6c757d;
+        color: #FFF;
+    }
+
+    .import-export div:hover {
+        background-color: #5c636a;
     }
 </style>
