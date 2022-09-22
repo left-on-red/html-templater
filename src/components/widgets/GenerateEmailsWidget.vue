@@ -148,7 +148,7 @@ export default {
             this.progress_label = '';
             if (this.generate_index > -1) {
                 let buffer = await this.get_email_buffer(this.generate_index);
-                let filename = `${madlib(this.get_context(this.generate_index), this.options.email_generate.filename_template).replace(/[/\\?%*:|"<>]/g, '_')}.msg`;
+                let filename = `${madlib(this.get_context(this.generate_index), this.options.email_generate.filename_template).replace(/\\[?%*:|"<>]/g, '_')}.msg`;
                 trigger_download(buffer, filename);
             }
 
@@ -162,7 +162,7 @@ export default {
                 let aoa = spreadsheets[i_spreadsheet].sheets[i_tab].aoa;
             
                 for (let i = headered[i_spreadsheet][i_tab] ? 1 : 0; i < aoa.length; i++) {
-                    let filename = `${madlib(this.get_context(i), this.options.email_generate.filename_template).replace(/[/\\?%*:|"<>]/g, '_')}.msg`;
+                    let filename = `${madlib(this.get_context(i), this.options.email_generate.filename_template).replace(/[\\?%*:|"<>]/g, '_')}.msg`;
 
                     this.progress_percent = (i / aoa.length) * 100;
                     this.progress_label = `${filename}...`;
