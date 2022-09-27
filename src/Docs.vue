@@ -51,7 +51,9 @@
                     <ul>
                         <li><a href="#recipients_to">To</a></li>
                         <li><a href="#recipients_cc">CC</a></li>
+                        <li><a href="#recipients_bcc">BCC</a></li>
                         <li><a href="#recipients_enable">Enable</a></li>
+                        <li><a href="#recipients_templated">Templated</a></li>
                         <li><a href="#recipients_delimiter">Delimiter</a></li>
                     </ul>
                 </li>
@@ -132,11 +134,15 @@
             
             <h2 id="recipients">Recipients (Email Templater)</h2>
             <h3 id="recipients_to">To</h3>
-            <p>The specified recipients that the generated <a href="#outlook_email_draft_files">Outlook Email Draft Files</a> will be configured to address the emails to. Represented as a specified column within the <a href="iterative_spreadsheet">Iterative Spreadsheet</a>.</p>
+            <p>The specified recipients that the generated <a href="#outlook_email_draft_files">Outlook Email Draft Files</a> will be configured to address the emails to. Represented as either a <a href="#templated_text_inputs">Templated Text Input</a> or a column within the <a href="#iterative_spreadsheet">Iterative Spreadsheet, depending on whether or not <a href="#recipients_templated">Templated</a> is turned on.</a></p>
             <h3 id="recipients_cc">CC</h3>
-            <p>The specified recipients that the generated <a href="#outlook_email_draft_files">Outlook Email Draft Files</a> will be configured to CC the emails to. Represented as a specified column within the <a href="iterative_spreadsheet">Iterative Spreadsheet</a>.</p>
+            <p>The specified recipients that the generated <a href="#outlook_email_draft_files">Outlook Email Draft Files</a> will be configured to CC the emails to. Represented as either a <a href="#templated_text_inputs">Templated Text Input</a> or a column within the <a href="#iterative_spreadsheet">Iterative Spreadsheet, depending on whether or not <a href="#recipients_templated">Templated</a> is turned on.</a></p>
+            <h3 id="recipients_bcc">BCC</h3>
+            <p>The specified recipients that the generated <a href="#outlook_email_draft_files">Outlook Email Draft Files</a> will be configured to BCC the emails to. Represented as either a <a href="#templated_text_inputs">Templated Text Input</a> or a column within the <a href="#iterative_spreadsheet">Iterative Spreadsheet, depending on whether or not <a href="#recipients_templated">Templated</a> is turned on.</a></p>
             <h3 id="recipients_enable">Enable</h3>
-            <p>A true/false toggle switch that determines whether or not that to enable this specific functionality</p>
+            <p>A true/false toggle switch that determines whether or not to enable this specific functionality</p>
+            <h3 id="recipients_templated">Templated</h3>
+            <p>A true/false toggle switch that determines whether or not to make the field input a templated text box</p>
             <h3 id="recipients_delimiter">Delimiter</h3>
             <p>A short text input that determines how to split the cell’s contents if more than 1 recipient is expected.</p>
             

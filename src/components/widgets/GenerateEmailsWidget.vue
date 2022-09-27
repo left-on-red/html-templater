@@ -85,19 +85,27 @@ export default {
             let ctx = this.get_context(index);
             let subject = `${madlib(ctx, this.options.email_generate.subject_template)}`;
 
-            let { to, cc } = this.options.recipients;
+            let { to, cc, bcc } = this.options.recipients;
 
             let email = new Email(true);
             email.subject(subject);
 
-            if (to.enabled) {
-                let split = to.delim ? ctx.col[to.col].split(to.delim) : [ctx.col[to.col]];
-                for (let s = 0; s < split.length; s++) { email.to(split[s]) }
-            }
+            let options = this.options.recipients;
+            let props = [ 'to', 'cc', 'bcc' ];
 
-            if (cc.enabled) {
-                let split = cc.delim ? ctx.col[cc.col].split(cc.delim) : [ctx.col[cc.col]];
-                for (let s = 0; s < split.length; s++) { email.cc(split[s]) }
+            for (let p = 0; p < props.length; p++) {
+                let key = props[p];
+                let obj = options[key];
+
+                if (obj.enabled) {
+                    let delim = obj.delim;
+                    let value;
+                    if (obj.is_template) { value = madlib(ctx, obj.template_string) }
+                    else { value = ctx.col[obj.col] }
+                    
+                    let split = delim ? value.split(delim) : [value];
+                    for (let s = 0; s < split.length; s++) { email[key](split[s]) }
+                }
             }
 
             if (this.options.attachments.archive) {

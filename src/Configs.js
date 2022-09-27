@@ -17,13 +17,25 @@ class RecipientsConfig {
     constructor() {
         this.to = {
             enabled: false,
+            is_template: false,
             col: 0,
+            template_string: '',
             delim: ''
         }
 
         this.cc = {
             enabled: false,
+            is_template: false,
             col: 0,
+            template_string: '',
+            delim: ''
+        },
+
+        this.bcc = {
+            enabled: false,
+            is_template: false,
+            col: 0,
+            template_string: '',
             delim: ''
         }
     }
