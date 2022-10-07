@@ -103,7 +103,7 @@ export default {
                     if (obj.is_template) { value = madlib(ctx, obj.template_string) }
                     else { value = ctx.col[obj.col] }
                     
-                    let split = delim ? value.split(delim) : [value];
+                    let split = delim && value.includes(delim) ? value.split(delim) : [value];
                     for (let s = 0; s < split.length; s++) { email[key](split[s]) }
                 }
             }
