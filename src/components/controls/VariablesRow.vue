@@ -1,3 +1,7 @@
+<script setup>
+    import CodeEditor from './../../components/CodeEditor.vue';
+</script>
+
 <script>
 export default {
     props: {
@@ -22,8 +26,9 @@ export default {
                 <button type="button" class="btn-close" @click="$emit('destroy')"></button>
             </div>
         </div>
-        <div class="col-12" style="padding: 0 0 10px 0;">
-            <textarea class="form-control" rows="10" placeholder="Javascript Expression..." data-gramm="false" v-model="values[1]"></textarea>
+        <div class="col-12" style="padding: 0 0 10px 0; height: 200px;">
+            <!-- <textarea class="form-control" rows="10" placeholder="Javascript Expression..." data-gramm="false" v-model="values[1]"></textarea> -->
+            <CodeEditor v-model="values[1]" />
         </div>
     </div>
     </template>
@@ -35,7 +40,7 @@ export default {
     }
 
     .btn-close {
-        padding: 10px;
+        padding: 10px 15px;
         margin-left: 5px !important;
     }
 </style>

@@ -5,6 +5,7 @@
     import RecipientsWidget from './components/widgets/RecipientsWidget.vue';
     import GenerateEmailsWidget from './components/widgets/GenerateEmailsWidget.vue';
     import GenerateHtmlWidget from './components/widgets/GenerateHtmlWidget.vue';
+    import CodeEditor from './components/CodeEditor.vue';
     import Docs from './Docs.vue';
     import config from './../package.json';
 </script>

@@ -29,6 +29,7 @@ export default {
     import SpreadsheetUploadPicker from '../controls/SpreadsheetUploadPicker.vue';
     import ValueMapsTable from '../controls/ValueMapsTable.vue';
     import VariablesTable from '../controls/VariablesTable.vue';
+    import CodeEditor from '../CodeEditor.vue';
 </script>
 
 <template>
