@@ -15,10 +15,18 @@ export default {
             progress_label: '',
             progress_percent: 0,
             generate_index: -1,
+            errors: []
         }
     },
 
     methods: {
+        flag_error(error, source) {
+            let lines = error.stack.split('\n');
+            let exception = lines[0];
+            let line = parseInt(lines[1].split('>')[lines[1].split('>').length - 1].split(')')[0].slice(1).split(':')[0]) - 2;
+            this.errors.push({ source, line, exception });
+        },
+
         get_context(index) {
             let headered = this.options.main.headered;
             let spreadsheets = this.spreadsheets;
@@ -71,10 +79,18 @@ export default {
                 ctx.vars = {};
 
                 for (let a = 0; a < arr.length; a++) {
+                    console.log(a);
                     let name = arr[a][0];
                     let expression = arr[a][1];
-                    let return_val = elevated_exec(s_ctx, expression);
-                    ctx.vars[name] = return_val;
+                    try {
+                        let return_val = elevated_exec(s_ctx, expression);
+                        ctx.vars[name] = return_val;
+                    }
+
+                    catch(error) {
+                        this.flag_error(error, `Custom variable: ${name}`);
+                        return;
+                    }
                 }
             }
 
@@ -84,8 +100,6 @@ export default {
         async get_email_buffer(index) {
             let ctx = this.get_context(index);
             let subject = `${madlib(ctx, this.options.email_generate.subject_template)}`;
-
-            let { to, cc, bcc } = this.options.recipients;
 
             let email = new Email(true);
             email.subject(subject);
@@ -126,7 +140,7 @@ export default {
             }
 
             let html_element = document.createElement('html');
-            html_element.innerHTML = tinymce.activeEditor.getContent();
+            html_element.innerHTML = madlib(ctx, tinymce.activeEditor.getContent());
             let images = html_element.getElementsByTagName('img');
             for (let i = 0; i < images.length; i++) {
                 let src = images[i].getAttribute('src');
@@ -134,7 +148,8 @@ export default {
                 let base64 = src.split(',')[1];
                 let uint8a = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
                 let attachment = new Attachment(uint8a, `img_${i}.${type}`, `img_${i}`);
-                images[i].src = `cid:img_${i}`;
+                images[i].setAttribute('src', `cid:img_${i}`);
+                console.log(images[i].getAttribute('src'));
                 email.attach(attachment);
             }
 
@@ -145,7 +160,7 @@ export default {
                         font-size: 14.5px;
                     }
                 </style>
-                ${madlib(ctx, html_element.innerHTML)}`
+                ${html_element.innerHTML}`
             );
 
             return email.msg();
@@ -216,6 +231,7 @@ export default {
                 <tr>
                     <th scope="col">Filename Template</th>
                     <th scope="col">Subject Template</th>
+                    <th scope="col">Break on Error</th>
                 </tr>
             </thead>
             <tbody>
@@ -226,10 +242,14 @@ export default {
                             <div class="input-group-append"><span class="input-group-text">.msg</span></div>
                         </div>
                     </td>
-
                     <td>
                         <div class="input-group">
                             <input type="text" class="form-control" placeholder="<subject template>" v-model="options.email_generate.subject_template">
+                        </div>
+                    </td>
+                    <td>
+                        <div class="form-check form-switch">
+                            <input type="checkbox" class="form-check-input" v-model="options.email_generate.break_on_error">
                         </div>
                     </td>
                 </tr>

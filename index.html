@@ -19,7 +19,13 @@
             if (matches == null) { matches = [] }
             for (let m = 0; m < matches.length; m++) {
                 try { str = str.replaceAll(`{${matches[m]}}`, elevated_exec(ctx, matches[m], true)); }
-                catch(e) { console.log(e); str = str.replace(`{${matches[m]}}`, '') }
+                catch(error) {
+                    //console.log(error);
+                    //let line = error.stack.split('\n').find(e => e.includes('<anonymous>:') || e.includes('Function:'));
+                    //let index = (line.includes('<anonymous>:') && line.indexOf('<anonymous>:') + '<anonymous>:'.length) || (line.includes('Function:') && line.indexOf('Function:') + 'Function:'.length);
+                    //console.log(+line.substring(index, index + 1) - 2);
+                    str = str.replace(`{${matches[m]}}`, '');
+                }
             }
             return str;
         }

@@ -55,6 +55,7 @@ class EmailGenerateConfig {
     constructor() {
         this.filename_template = '';
         this.subject_template = '';
+        this.break_on_error = true;
     }
 }
 
