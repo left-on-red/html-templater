@@ -79,7 +79,6 @@ export default {
                 ctx.vars = {};
 
                 for (let a = 0; a < arr.length; a++) {
-                    console.log(a);
                     let name = arr[a][0];
                     let expression = arr[a][1];
                     try {
@@ -88,7 +87,7 @@ export default {
                     }
 
                     catch(error) {
-                        this.flag_error(error, `Custom variable: ${name}`);
+                        this.flag_error(error, `custom variable: ${name}`);
                         return;
                     }
                 }
@@ -112,13 +111,17 @@ export default {
                 let obj = options[key];
 
                 if (obj.enabled) {
-                    let delim = obj.delim;
-                    let value;
-                    if (obj.is_template) { value = madlib(ctx, obj.template_string) }
-                    else { value = ctx.col[obj.col] }
+                    try {
+                        let delim = obj.delim;
+                        let value;
+                        if (obj.is_template) { value = madlib(ctx, obj.template_string) }
+                        else { value = ctx.col[obj.col] }
                     
-                    let split = delim && value.includes(delim) ? value.split(delim) : [value];
-                    for (let s = 0; s < split.length; s++) { email[key](split[s]) }
+                        let split = delim && value.includes(delim) ? value.split(delim) : [value];
+                        for (let s = 0; s < split.length; s++) { email[key](split[s]) }
+                    }
+
+                    catch(error) { this.flag_error(`${props[p]} recipient`) }
                 }
             }
 
@@ -265,18 +268,45 @@ export default {
                 </select>
                 <button type="button" class="btn btn-secondary" @click="start_generate()" :disabled="spreadsheets.length == 0 || !options.email_generate.filename_template">Generate</button>
             </div>
-            <label style="margin-top: 20px;">{{progress_label}}</label>
-            <div class="progress" style="margin: 5px 0; border-radius: 0px;">
-                <div class="progress-bar progress-bar-striped progress-bar-animated bg-secondary" role="progressbar" :style="`width: ${progress_percent}%;`"></div>
+            <div class="progress-wrapper">
+                <div class="progress-bg" :style="`width: ${progress_percent}%;`">
+                    <div class="progress-label">{{progress_label}}</div>
+                </div>
             </div>
+
+            <!-- <div class="progress" style="margin: 5px 0; border-radius: 0px; position: relative; height: 20px;">
+                <span clas="progress-label">test</span>
+                <div class="progress-bar progress-bar-striped progress-bar-animated bg-secondary" role="progressbar" :style="`width: ${progress_percent}%;`"></div>
+            </div> -->
         </div>
     </widget>
 </template>
 
 <style scoped>
-th {
-    font-size: 1rem;
-    font-weight: bold;
-    padding: 5px;
-}
+    .progress-wrapper {
+        display: relative;
+        width: 100%;
+        height: 20px;
+        background-color: #DDDDDD;
+        margin: 10px 0 5px 0;
+    }
+
+    .progress-bg {
+        background-color: #202020;
+        display: relative;
+        height: 100%;
+        transition: all 0.1s;
+
+    }
+
+    .progress-label {
+        position: absolute;
+        color: white;
+        margin: 0 auto;
+        line-height: 20px;
+        width: 100%;
+        left: 0;
+        text-align: center;
+        mix-blend-mode: difference;
+    }
 </style>

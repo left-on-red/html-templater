@@ -22,6 +22,7 @@ export default {
                     <th scope="col"></th>
                     <th scope="col">Enable</th>
                     <th scope="col">Templated</th>
+                    <th scope="col">Error on Empty</th>
                     <th scope="col">Delimiter</th>
                 </tr>
             </thead>
@@ -44,6 +45,12 @@ export default {
                     <td>
                         <div class="form-check form-switch mx-2">
                             <input type="checkbox" class="form-check-input" v-model="options.to.is_template">
+                        </div>
+                    </td>
+
+                    <td>
+                        <div class="form-check form-switch mx-2">
+                            <input type="checkbox" class="form-check-input" v-model="options.to.error_on_blank">
                         </div>
                     </td>
 
@@ -74,6 +81,12 @@ export default {
                     </td>
 
                     <td>
+                        <div class="form-check form-switch mx-2">
+                            <input type="checkbox" class="form-check-input" v-model="options.cc.error_on_blank">
+                        </div>
+                    </td>
+
+                    <td>
                         <input class="form-control" style="width: 100px;" v-model="options.cc.delim">
                     </td>
                 </tr>
@@ -100,6 +113,12 @@ export default {
                     </td>
 
                     <td>
+                        <div class="form-check form-switch mx-2">
+                            <input type="checkbox" class="form-check-input" v-model="options.bcc.error_on_blank">
+                        </div>
+                    </td>
+
+                    <td>
                         <input class="form-control" style="width: 100px;" v-model="options.bcc.delim">
                     </td>
                 </tr>
@@ -109,11 +128,6 @@ export default {
 </template>
 
 <style scoped>
-th {
-    font-size: 1rem;
-    font-weight: bold;
-    padding: 5px;
-}
 
 .input-group input, .input-group select {
     width: 300px !important;

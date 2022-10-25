@@ -1,3 +1,7 @@
+<script setup>
+    import CodeEditor from './../../../components/CodeEditor.vue';
+</script>
+
 <script>
 export default {
     props: {
@@ -31,7 +35,9 @@ export default {
             </div>
             <div class="row">
                 <div class="col">
-                    <textarea v-if="options.conditional" class="form-control" rows="3" placeholder="Javascript Expression..." v-model="options.filename_expression"></textarea>
+                    <div v-if="options.conditional" style="width: 100%; height: 200px;">
+                        <CodeEditor v-model="options.filename_expression" />
+                    </div>
                     <div v-else class="input-group">
                         <div class="input-group-prepend"><span class="input-group-text">Filename Template</span></div>
                         <input type="text" class="form-control" placeholder="<template>" v-model="options.filename_template">

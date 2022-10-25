@@ -36,19 +36,51 @@ export default {
 
 <script setup>
     import Widget from '../Widget.vue';
-    import AttachmentsArchive from '../controls/attachments/AttachmentsArchive.vue';
+    import CodeEditor from './../../components/CodeEditor.vue';
 </script>
 
 <template>
     <widget title="Attachments">
-        <div class="input-group">
-            <button type="button" class="btn btn-outline-secondary" @click="upload()">Upload</button>
-            <input type="text" class="form-control" placeholder="<no file specified>" readonly :value="options.archive ? options.archive_name : ''">
+        <table class="table table-borderless" style="margin-top: 10px;">
+            <thead>
+                <tr>
+                    <th scope="col">Zip Archive</th>
+                    <th scope="col">Conditional</th>
+                    <th scope="col">Error on None</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <div class="input-group">
+                            <button type="button" class="btn btn-outline-secondary" @click="upload()">Upload</button>
+                            <input type="text" class="form-control" placeholder="<no file specified>" readonly :value="options.archive ? options.archive_name : ''">
+                        </div>
+                    </td>
+                    <td>
+                        <div class="form-check form-switch">
+                            <input type="checkbox" class="form-check-input" v-model="options.conditional" :disabled="this.options.archive == null" />
+                        </div>
+                    </td>
+                    <td>
+                        <div class="form-check form-switch">
+                            <input type="checkbox" class="form-check-input" v-model="options.error_on_blank" :disabled="this.options.archive == null" />
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div v-if="options.archive && options.archive_name.endsWith('.zip')" style="padding: 5px;">
+            <div v-if="options.conditional" style="width: 100%; height: 200px;">
+                <CodeEditor v-model="options.filename_expression" />
+            </div>
+            <div v-else class="input-group">
+                <div class="input-group-prepend"><span class="input-group-text">Filename Template</span></div>
+                <input type="text" class="form-control" placeholder="<template>" v-model="options.filename_template">
+            </div>
         </div>
-        <AttachmentsArchive v-if="options.archive && options.archive_name.endsWith('.zip')" :options="options" />
     </widget>
 </template>
 
 <style scoped>
-
 </style>

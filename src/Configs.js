@@ -20,7 +20,8 @@ class RecipientsConfig {
             is_template: false,
             col: 0,
             template_string: '',
-            delim: ''
+            delim: '',
+            error_on_blank: false
         }
 
         this.cc = {
@@ -28,7 +29,8 @@ class RecipientsConfig {
             is_template: false,
             col: 0,
             template_string: '',
-            delim: ''
+            delim: '',
+            error_on_blank: false
         },
 
         this.bcc = {
@@ -36,7 +38,8 @@ class RecipientsConfig {
             is_template: false,
             col: 0,
             template_string: '',
-            delim: ''
+            delim: '',
+            error_on_blank: false
         }
     }
 }
@@ -48,6 +51,7 @@ class AttachmentsConfig {
         this.conditional = false;
         this.filename_template = '';
         this.filename_expression = '';
+        this.error_on_blank = false;
     }
 }
 
@@ -55,7 +59,7 @@ class EmailGenerateConfig {
     constructor() {
         this.filename_template = '';
         this.subject_template = '';
-        this.break_on_error = true;
+        this.break_on_error = false;
     }
 }
 
@@ -63,6 +67,7 @@ class HtmlGenerateConfig {
     constructor() {
         this.output_type = 0;
         this.filename_template = '';
+        this.break_on_error = false;
     }
 }
 
