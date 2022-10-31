@@ -19,10 +19,13 @@
                     declare let key : string;
 
                     /** an array representing the column values within the current iterative item */
-                    declare let col : string[];
+                    declare let cols : string[];
+
+                    /** a key-value mapped object where the key is the column number (zero-indexed) and the value is the mapped value */
+                    declare let mapped : Object;
 
                     /** a 4D array representing all of the \`spreadsheets -> sheets -> rows -> columns\` that have currently been uploaded */
-                    declare let spreadsheet : string[][][][];
+                    declare let spreadsheets : string[][][][];
 
                 `, 'htmltemplater.d.ts');
 

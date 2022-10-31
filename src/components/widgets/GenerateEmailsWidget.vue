@@ -21,10 +21,34 @@ export default {
 
     methods: {
         flag_error(error, source) {
-            let lines = error.stack.split('\n');
-            let exception = lines[0];
-            let line = parseInt(lines[1].split('>')[lines[1].split('>').length - 1].split(')')[0].slice(1).split(':')[0]) - 2;
-            this.errors.push({ source, line, exception });
+            if (error) {
+                let lines = error.stack.split('\n');
+                let exception = lines[0];
+                let line = parseInt(lines[1].split('>')[lines[1].split('>').length - 1].split(')')[0].slice(1).split(':')[0]) - 2;
+                if (!line) { line = null }
+                this.errors.push({ source, line, exception });
+            }
+
+            else { this.errors.push({ source, line: null, exception: null }) }
+        },
+
+        async errored_sequence(fns) {
+            let args = undefined;
+            for(let f = 0; f < fns.length; f++) {
+                let out = fns[f].constructor.name === 'AsyncFunction' ? await fns[f](args) : fns[f](args);
+                if (this.errors.length > 0 && this.options.email_generate.break_on_error) { return false; }
+                args = out;
+            }
+
+            return true;
+        },
+
+        errored_sequence_promise(fn) {
+            return new Promise(async (resolve, reject) => {
+                let out = fn.constructor.name === 'AsyncFunction' ? await fn() : fn();
+                if (this.errors.length > 0 && this.options.email_generate.break_on_error) { reject() }
+                else { resolve(out) }
+            });
         },
 
         get_context(index) {
@@ -40,6 +64,7 @@ export default {
 
                 // shallow clone (shaking off object references)
                 col: [...row],
+                cols: [...row],
                 spreadsheets: spreadsheets.map(s => s.sheets.map(t => t.aoa))
             }
 
@@ -97,6 +122,8 @@ export default {
         },
 
         async get_email_buffer(index) {
+            let key = this.spreadsheets[this.options.main.i_spreadsheet].sheets[this.options.main.i_tab].aoa[index][this.options.main.k_column];
+
             let ctx = this.get_context(index);
             let subject = `${madlib(ctx, this.options.email_generate.subject_template)}`;
 
@@ -107,8 +134,8 @@ export default {
             let props = [ 'to', 'cc', 'bcc' ];
 
             for (let p = 0; p < props.length; p++) {
-                let key = props[p];
-                let obj = options[key];
+                let k = props[p];
+                let obj = options[k];
 
                 if (obj.enabled) {
                     try {
@@ -118,28 +145,29 @@ export default {
                         else { value = ctx.col[obj.col] }
                     
                         let split = delim && value.includes(delim) ? value.split(delim) : [value];
-                        for (let s = 0; s < split.length; s++) { email[key](split[s]) }
+                        for (let s = 0; s < split.length; s++) { email[k](split[s]) }
                     }
 
-                    catch(error) { this.flag_error(`${props[p]} recipient`) }
+                    catch(error) { this.flag_error(error, `${key} ${props[p]} recipient`) }
                 }
             }
 
             if (this.options.attachments.archive) {
+
                 let data = this.options.attachments.archive;
-                let { conditional, filename_template, filename_expression } = this.options.attachments;
+                let { conditional, filename_template, filename_expression, error_on_blank } = this.options.attachments;
 
                 try {
                     let val = '';
                     if (conditional) { val = elevated_exec(ctx, filename_expression) }
                     else { val = madlib(ctx, filename_template) }
+
                     let file = data.file(val);
                     if (file) { email.attach(new Attachment(await file.async('uint8array'), val)) }
+                    else if (error_on_blank) { this.flag_error(null, `${key} attachment "${val}" not found`) }
                 }
 
-                catch(e) { /* abort? */ }
-                
-                
+                catch(error) { this.flag_error(error, `${key} attachment`) }      
             }
 
             let html_element = document.createElement('html');
@@ -152,7 +180,6 @@ export default {
                 let uint8a = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
                 let attachment = new Attachment(uint8a, `img_${i}.${type}`, `img_${i}`);
                 images[i].setAttribute('src', `cid:img_${i}`);
-                console.log(images[i].getAttribute('src'));
                 email.attach(attachment);
             }
 
@@ -172,10 +199,14 @@ export default {
         async start_generate() {
             this.progress_percent = 0;
             this.progress_label = '';
+            this.errors = [];
             if (this.generate_index > -1) {
-                let buffer = await this.get_email_buffer(this.generate_index);
-                let filename = `${madlib(this.get_context(this.generate_index), this.options.email_generate.filename_template).replace(/\\[?%*:|"<>]/g, '_')}.msg`;
-                trigger_download(buffer, filename);
+                await this.errored_sequence([
+                    () => { return this.get_email_buffer(this.generate_index) },
+                    (buffer) => { return { buffer, filename: `${madlib(this.get_context(this.generate_index), this.options.email_generate.filename_template).replace(/\\[?%*:|"<>]/g, '_')}.msg` } },
+                    ({ filename, buffer }) => { trigger_download(buffer, filename) }
+                
+                ]);
             }
 
             else {
@@ -186,24 +217,37 @@ export default {
                 let i_spreadsheet = this.options.main.i_spreadsheet;
                 let i_tab = this.options.main.i_tab;
                 let aoa = spreadsheets[i_spreadsheet].sheets[i_tab].aoa;
-            
-                for (let i = headered[i_spreadsheet][i_tab] ? 1 : 0; i < aoa.length; i++) {
-                    let filename = `${madlib(this.get_context(i), this.options.email_generate.filename_template).replace(/[\\?%*:|"<>]/g, '_')}.msg`;
 
-                    this.progress_percent = (i / aoa.length) * 100;
-                    this.progress_label = `${filename}...`;
+                let i = (headered[i_spreadsheet][i_tab] ? 1 : 0) - 1;
 
-                    let buffer = await this.get_email_buffer(i);
+                for (i; i < aoa.length; i++) {
+                    let success = await this.errored_sequence([
+                        () => {
+                            let filename = `${madlib(this.get_context(i), this.options.email_generate.filename_template).replace(/[\\?%*:|"<>]/g, '_')}.msg`;
+                            
+                            this.progress_percent = Math.ceil((i / aoa.length) * 100);
+                            this.progress_label = `${filename}...`;
+                        
+                            return filename;
+                        },
 
-                    zip.file(filename, buffer);
+                        async (filename) => { return { filename, buffer: await this.get_email_buffer(i) } },
+                        async ({ filename, buffer }) => { zip.file(filename, buffer) }
+                    ]);
+
+                    if (!success) {
+                        this.progress_label = 'failed...';
+                        break;
+                    }
                 }
 
-                this.progress_label = 'zipping...';
-
-                zip.generateAsync({ type: 'uint8array' }).then((u8) => {
-                    this.progress_label = 'done.';
-                    trigger_download(u8, `export_${Date.now()}.zip`);
-                });
+                if ((this.errors.length > 0 && !this.options.email_generate.break_on_error) || this.errors.length == 0) {
+                    this.progress_label = 'zipping...';
+                    zip.generateAsync({ type: 'uint8array' }).then((u8) => {
+                        this.progress_label = 'done.';
+                        trigger_download(u8, `export_${Date.now()}.zip`);
+                    })
+                }
             }
         }
     },
@@ -273,11 +317,12 @@ export default {
                     <div class="progress-label">{{progress_label}}</div>
                 </div>
             </div>
-
-            <!-- <div class="progress" style="margin: 5px 0; border-radius: 0px; position: relative; height: 20px;">
-                <span clas="progress-label">test</span>
-                <div class="progress-bar progress-bar-striped progress-bar-animated bg-secondary" role="progressbar" :style="`width: ${progress_percent}%;`"></div>
-            </div> -->
+            <div v-if="errors.length > 0">
+                <div v-for="(error, i) in errors" :key="i" class="error">
+                    <p class="error-heading">{{error.source}}</p>
+                    <p class="error-body" v-if="error.exception">{{error.exception}}{{error.line ? ` at line ${error.line}` : ''}}</p>
+                </div>
+            </div>
         </div>
     </widget>
 </template>
@@ -287,7 +332,7 @@ export default {
         display: relative;
         width: 100%;
         height: 20px;
-        background-color: #DDDDDD;
+        background-color: #dee2e6;
         margin: 10px 0 5px 0;
     }
 
@@ -301,12 +346,36 @@ export default {
 
     .progress-label {
         position: absolute;
-        color: white;
+        color: #FFFFFF;
         margin: 0 auto;
         line-height: 20px;
         width: 100%;
         left: 0;
         text-align: center;
         mix-blend-mode: difference;
+    }
+
+    .error {
+        font-family: monospace;
+        font-weight: bold;
+        margin: 10px 0 5px 0;
+        background-color: #FFBBBB;
+        color: #BB0000;
+        padding: 5px 10px;
+        border-radius: 5px;
+        border: solid 2px #FF7777;
+        font-size: 14px;
+    }
+
+    .error-heading, .error-body {
+        margin: 0;
+        padding: 0;
+    }
+
+    .error-heading {
+
+    }
+
+    .error-body {
     }
 </style>
