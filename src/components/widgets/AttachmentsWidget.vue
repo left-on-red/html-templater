@@ -59,12 +59,12 @@ export default {
                     </td>
                     <td>
                         <div class="form-check form-switch">
-                            <input type="checkbox" class="form-check-input" v-model="options.conditional" :disabled="this.options.archive == null" />
+                            <input type="checkbox" class="form-check-input" v-model="options.conditional" :disabled="options.archive == null" />
                         </div>
                     </td>
                     <td>
                         <div class="form-check form-switch">
-                            <input type="checkbox" class="form-check-input" v-model="options.error_on_blank" :disabled="this.options.archive == null" />
+                            <input type="checkbox" class="form-check-input" v-model="options.error_on_blank" :disabled="options.archive == null" />
                         </div>
                     </td>
                 </tr>
