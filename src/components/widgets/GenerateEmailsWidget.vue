@@ -221,6 +221,8 @@ export default {
                 let i = (headered[i_spreadsheet][i_tab] ? 1 : 0) - 1;
 
                 for (i; i < aoa.length; i++) {
+                    let current_errors = this.errors.length;
+
                     let success = await this.errored_sequence([
                         () => {
                             let filename = `${madlib(this.get_context(i), this.options.email_generate.filename_template).replace(/[\\?%*:|"<>]/g, '_')}.msg`;
@@ -232,10 +234,12 @@ export default {
                         },
 
                         async (filename) => { return { filename, buffer: await this.get_email_buffer(i) } },
-                        async ({ filename, buffer }) => { zip.file(filename, buffer) }
+                        async ({ filename, buffer }) => {
+                            if (!(this.options.email_generate.skip_on_error && this.errors.length > current_errors)) { zip.file(filename, buffer) }
+                        }
                     ]);
 
-                    if (!success) {
+                    if (!success && this.options.email_generate.break_on_error) {
                         this.progress_label = 'failed...';
                         break;
                     }
@@ -279,6 +283,7 @@ export default {
                     <th scope="col">Filename Template</th>
                     <th scope="col">Subject Template</th>
                     <th scope="col">Break on Error</th>
+                    <th scope="col">Skip on Error</th>
                 </tr>
             </thead>
             <tbody>
@@ -297,6 +302,11 @@ export default {
                     <td>
                         <div class="form-check form-switch">
                             <input type="checkbox" class="form-check-input" v-model="options.email_generate.break_on_error">
+                        </div>
+                    </td>
+                    <td>
+                        <div class="form-check form-switch">
+                            <input type="checkbox" class="form-check-input" v-model="options.email_generate.skip_on_error">
                         </div>
                     </td>
                 </tr>

@@ -60,6 +60,7 @@ class EmailGenerateConfig {
         this.filename_template = '';
         this.subject_template = '';
         this.break_on_error = false;
+        this.skip_on_error = false;
     }
 }
 
