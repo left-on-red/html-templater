@@ -141,8 +141,8 @@
                             let aoa = [];
                             let range = XLSX.utils.decode_range(workbook['!ref']);
 
-                            let row_count = range.e.r;
-                            let col_count = range.e.c;
+                            let row_count = range.e.r + 1;
+                            let col_count = range.e.c + 1;
 
                             for (let r = 0; r < row_count; r++) {
                                 let row = [];
